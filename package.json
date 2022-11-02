@@ -1,0 +1,25 @@
+{
+  "name": "octoherd-script-pr-files",
+  "version": "0.0.1",
+  "description": "Add commits and create PRs across repositories. Useful for setting up issue and PR templates.",
+  "main": "cli.js",
+  "type": "module",
+  "exports": "./script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kfcampbell/octoherd-script-pr-files.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/kfcampbell/octoherd-script-pr-files/issues"
+  },
+  "homepage": "https://github.com/kfcampbell/octoherd-script-pr-files#readme",
+  "dependencies": {
+    "@octoherd/cli": "github:octoherd/cli",
+    "octokit": "^2.0.10"
+  }
+}
