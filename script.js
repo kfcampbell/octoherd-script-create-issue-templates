@@ -17,7 +17,7 @@ export async function script(octokit, repository, options) {
   // iterate through files and store the string content of each file
   const templates = await Promise.all(
     files.map(async (file) => {
-      // read the string content of each file in the templates directory
+      // read the string content of each file in the templates directory into variable
       const template = await fs.promises.readFile(
         path.join('./templates', file),
         'utf8'
@@ -52,6 +52,34 @@ export async function script(octokit, repository, options) {
 		ref: `refs/heads/${branchName}`,
 		sha: sha,
 	});
+
+  // check to see if a file in the .github/ISSUE_TEMPLATE/ directory with the same name already exists
+  const { data: existingFiles } = await octokit.request("GET /repos/{owner}/{repo}/contents/{path}", {
+    owner: repository.owner.login,
+    repo: repository.name,
+    path: '.github/ISSUE_TEMPLATE',
+  });
+
+  // if issue templates exist and we would overwrite them, we need to remove those files first
+  // so the automation can recreate them.
+  if (existingFiles.length > 0) {
+    for (let i = 0; i < existingFiles.length; i++) {
+      for (let j = 0; j < templates.length; j++) {
+        if (existingFiles[i].name === templates[j].name) {
+          // delete the file
+          await octokit.request("DELETE /repos/{owner}/{repo}/contents/{path}", {
+            owner: repository.owner.login,
+            repo: repository.name,
+            path: `.github/ISSUE_TEMPLATE/${existingFiles[i].name}`,
+            branch: branchName,
+            message: `octoherd: delete ${existingFiles[i].name}`,
+            sha: existingFiles[i].sha,
+          });
+        }
+      }
+    }
+  }
+
 
 	// iterate through templates and add each to the branch "octoherd-script-PR"
 	for (const template of templates) {
