@@ -49,7 +49,7 @@ export async function script(octokit, repository, options) {
 		await octokit.request("PUT /repos/{owner}/{repo}/contents/{path}", {
 			owner: repository.owner.login,
 			repo: repository.name,
-			path: `.github/ISSUE_TEMPLATE/${template.name}.yml`,
+			path: `.github/ISSUE_TEMPLATE/${template.name}`,
 			message: `feat: add ${template.name} issue template`,
 			content: Buffer.from(template.content).toString("base64"),
 			branch: branch.data.ref,
