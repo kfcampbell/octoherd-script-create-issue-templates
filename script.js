@@ -36,11 +36,20 @@ export async function script(octokit, repository, options) {
 		ref: `heads/${repository.default_branch}`,
 	});
 
-	// create a branch called "octoherd-script-PR" off of the latest SHA
+  // come up with branch name based on the current date. remove all spaces, colons, parentheses, and periods
+  let branchName = `octoherd/${new Date().toString().replace(/ /g, '-').replace(/:/g, '-').replace(/\(/g, '-').replace(/\)/g, '-').replace(/\./g, '-')}`;
+
+  // only take the first part of branchName before "-GMT"
+  branchName = branchName.split('-GMT')[0];
+
+  // lowercase the branchName
+  branchName = branchName.toLowerCase();
+
+	// create a branch off of the latest SHA
 	const branch = await octokit.request("POST /repos/{owner}/{repo}/git/refs", {
 		owner: repository.owner.login,
 		repo: repository.name,
-		ref: "refs/heads/octoherd-script-PR",
+		ref: `refs/heads/${branchName}`,
 		sha: sha,
 	});
 
@@ -62,7 +71,7 @@ export async function script(octokit, repository, options) {
 		repo: repository.name,
 		title: "Add issue templates",
 		body: "This PR adds our standardized issue templates",
-		head: "octoherd-script-PR",
+		head: branchName,
 		base: "main",
 	});
 	octokit.log.info({ pull: pull }, "pull");
