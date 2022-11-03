@@ -21,5 +21,8 @@
   "dependencies": {
     "@octoherd/cli": "github:octoherd/cli",
     "octokit": "^2.0.10"
+  },
+  "devDependencies": {
+    "@types/node": "^18.11.9"
   }
 }
