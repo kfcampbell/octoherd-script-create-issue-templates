@@ -36,8 +36,8 @@ body:
     attributes:
       label: Relevant log output
       description: |
-	  	Please copy and paste any relevant source code or log details. This will be automatically formatted into code, so no need for backticks.
-		Please check your logs before submission to ensure sensitive information is redacted.
+        Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks.
+        Please check your logs before submission to ensure sensitive information is redacted.
       render: shell
   - type: checkboxes
     id: terms
