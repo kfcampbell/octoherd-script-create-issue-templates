@@ -29,12 +29,12 @@ export async function script(octokit, repository, options) {
     })
   );
 
-	// get SHA of latest default branch commit
-	const { data: { object: { sha } } } = await octokit.request("GET /repos/{owner}/{repo}/git/ref/{ref}", {
-		owner: repository.owner.login,
-		repo: repository.name,
-		ref: `heads/${repository.default_branch}`,
-	});
+  // get SHA of latest default branch commit
+  const { data: { object: { sha } } } = await octokit.request("GET /repos/{owner}/{repo}/git/ref/{ref}", {
+    owner: repository.owner.login,
+    repo: repository.name,
+    ref: `heads/${repository.default_branch}`,
+  });
 
   // come up with branch name based on the current date. remove all spaces, colons, parentheses, and periods
   let branchName = `octoherd/${new Date().toString().replace(/ /g, '-').replace(/:/g, '-').replace(/\(/g, '-').replace(/\)/g, '-').replace(/\./g, '-')}`;
@@ -45,62 +45,72 @@ export async function script(octokit, repository, options) {
   // lowercase the branchName
   branchName = branchName.toLowerCase();
 
-	// create a branch off of the latest SHA
-	const branch = await octokit.request("POST /repos/{owner}/{repo}/git/refs", {
-		owner: repository.owner.login,
-		repo: repository.name,
-		ref: `refs/heads/${branchName}`,
-		sha: sha,
-	});
-
-  // check to see if a file in the .github/ISSUE_TEMPLATE/ directory with the same name already exists
-  const { data: existingFiles } = await octokit.request("GET /repos/{owner}/{repo}/contents/{path}", {
+  // create a branch off of the latest SHA
+  const branch = await octokit.request("POST /repos/{owner}/{repo}/git/refs", {
     owner: repository.owner.login,
     repo: repository.name,
-    path: '.github/ISSUE_TEMPLATE',
+    ref: `refs/heads/${branchName}`,
+    sha: sha,
   });
+
+  let existingIssueTemplates;
+  try {
+    // check to see if a file in the .github/ISSUE_TEMPLATE/ directory with the same name already exists
+    const { data: existingFiles } = await octokit.request("GET /repos/{owner}/{repo}/contents/{path}", {
+      owner: repository.owner.login,
+      repo: repository.name,
+      path: '.github/ISSUE_TEMPLATE',
+    });
+    existingIssueTemplates = existingFiles;
+  } catch (e) {
+    if (e.status !== 404) {
+      throw e;
+    }
+    existingIssueTemplates = [];
+  }
+
+
 
   // if issue templates exist and we would overwrite them, we need to remove those files first
   // so the automation can recreate them.
-  if (existingFiles.length > 0) {
-    for (let i = 0; i < existingFiles.length; i++) {
+  if (existingIssueTemplates.length > 0) {
+    for (let i = 0; i < existingIssueTemplates.length; i++) {
       for (let j = 0; j < templates.length; j++) {
-        if (existingFiles[i].name === templates[j].name) {
+        if (existingIssueTemplates[i].name === templates[j].name) {
           // delete the file
           await octokit.request("DELETE /repos/{owner}/{repo}/contents/{path}", {
             owner: repository.owner.login,
             repo: repository.name,
-            path: `.github/ISSUE_TEMPLATE/${existingFiles[i].name}`,
+            path: `.github/ISSUE_TEMPLATE/${existingIssueTemplates[i].name}`,
             branch: branchName,
-            message: `octoherd: delete ${existingFiles[i].name}`,
-            sha: existingFiles[i].sha,
+            message: `octoherd: delete ${existingIssueTemplates[i].name}`,
+            sha: existingIssueTemplates[i].sha,
           });
         }
       }
     }
   }
 
+  // iterate through templates and add each to the branch "octoherd-script-PR"
+  for (const template of templates) {
+    await octokit.request("PUT /repos/{owner}/{repo}/contents/{path}", {
+      owner: repository.owner.login,
+      repo: repository.name,
+      path: `.github/ISSUE_TEMPLATE/${template.name}`,
+      message: `feat: add ${template.name} issue template`,
+      content: Buffer.from(template.content).toString("base64"),
+      branch: branch.data.ref,
+    });
+  }
 
-	// iterate through templates and add each to the branch "octoherd-script-PR"
-	for (const template of templates) {
-		await octokit.request("PUT /repos/{owner}/{repo}/contents/{path}", {
-			owner: repository.owner.login,
-			repo: repository.name,
-			path: `.github/ISSUE_TEMPLATE/${template.name}`,
-			message: `feat: add ${template.name} issue template`,
-			content: Buffer.from(template.content).toString("base64"),
-			branch: branch.data.ref,
-		});
-	}
-
-	// create a PR with a new issue templates
-	const { data: pull } = await octokit.request("POST /repos/{owner}/{repo}/pulls", {
-		owner: repository.owner.login,
-		repo: repository.name,
-		title: "Add issue templates",
-		body: "This PR adds our standardized issue templates",
-		head: branchName,
-		base: "main",
-	});
-	octokit.log.info({ pull: pull }, "pull");
+  // create a PR with a new issue templates
+  const { data: pull } = await octokit.request("POST /repos/{owner}/{repo}/pulls", {
+    owner: repository.owner.login,
+    repo: repository.name,
+    title: "Add issue templates",
+    body: "This PR adds our standardized issue templates",
+    head: branchName,
+    base: "main",
+  });
+  octokit.log.info({ pull: pull }, "pull");
 }
