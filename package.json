@@ -1,6 +1,6 @@
 {
   "name": "octoherd-script-create-issue-templates",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Add commits and create PRs across repositories. Useful for setting up issue templates.",
   "main": "cli.js",
   "type": "module",
