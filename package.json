@@ -1,7 +1,7 @@
 {
-  "name": "octoherd-script-pr-files",
-  "version": "0.0.1",
-  "description": "Add commits and create PRs across repositories. Useful for setting up issue and PR templates.",
+  "name": "octoherd-script-create-issue-templates",
+  "version": "0.3.0",
+  "description": "Add commits and create PRs across repositories. Useful for setting up issue templates.",
   "main": "cli.js",
   "type": "module",
   "exports": "./script.js",
