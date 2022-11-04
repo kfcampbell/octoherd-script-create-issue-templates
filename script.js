@@ -9,17 +9,17 @@ import path from 'path';
  * @param {import('@octoherd/cli').Octokit} octokit
  * @param {import('@octoherd/cli').Repository} repository
  */
-export async function script(octokit, repository, options) {
+export async function script(octokit, repository, { templateDirectory }) {
 
   // get list of all files in templates directory
-  const files = fs.readdirSync('./templates');
+  const files = fs.readdirSync(templateDirectory);
 
   // iterate through files and store the string content of each file
   const templates = await Promise.all(
     files.map(async (file) => {
       // read the string content of each file in the templates directory into variable
       const template = await fs.promises.readFile(
-        path.join('./templates', file),
+        path.join(templateDirectory, file),
         'utf8'
       );
       return {
