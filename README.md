@@ -1,6 +1,6 @@
-# octoherd-script-pr-files
+# octoherd-script-create-issue-templates
 
-> Add files and create PRs across repositories. Useful for generating issue and PR templates.
+> Create PRs to add issue templates across repositories.
 
 The tool will scan the `templates` directory to determine issue templates. It will create an issue template for each file there, branch off of the latest default branch commit, and create a PR with the issue templates added.
 
