@@ -108,9 +108,9 @@ export async function script(octokit, repository, { templateDirectory }) {
     owner: repository.owner.login,
     repo: repository.name,
     title: "Add issue templates",
-    body: "This PR adds our standardized issue templates",
+    body: "This PR adds our standardized issue templates.",
     head: branchName,
-    base: "main",
+    base: repository.default_branch,
   });
   octokit.log.info({ pull: pull }, "pull");
 }
